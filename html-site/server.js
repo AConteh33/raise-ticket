@@ -441,7 +441,43 @@ app.get("/api/health", (_req, res) => {
 const API_ONLY = isApiOnlyMode;
 
 if (!API_ONLY) {
-  app.get("/", (_req, res) => res.redirect("/index.html"));
+  const PUBLIC_PATHS = new Set([
+    "/login.html",
+    "/api/auth/login",
+    "/api/auth/me",
+    "/api/health",
+  ]);
+
+  const PUBLIC_PREFIXES = [
+    "/css/",
+    "/js/auth.js",
+    "/js/api.js",
+    "/js/config.js",
+    "/js/permissions.js",
+    "/js/constants.js",
+  ];
+
+  function isPublicPath(reqPath) {
+    if (PUBLIC_PATHS.has(reqPath)) return true;
+    return PUBLIC_PREFIXES.some((p) => reqPath.startsWith(p));
+  }
+
+  app.get("/", (_req, res) => res.redirect("/login.html"));
+
+  app.use((req, res, next) => {
+    if (req.method === "GET" && !isPublicPath(req.path)) {
+      const token = req.cookies[SESSION_COOKIE];
+      const user = token ? dbAuth.getSessionUser(token) : null;
+      if (!user) {
+        if (req.path.startsWith("/api/")) {
+          return res.status(401).json({ error: "Authentication required" });
+        }
+        return res.redirect("/login.html");
+      }
+    }
+    next();
+  });
+
   app.use(express.static(ROOT));
 }
 
