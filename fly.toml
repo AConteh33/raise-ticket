@@ -1,27 +1,31 @@
-# fly.toml - https://fly.io/docs/reference/configuration/
+# fly.toml app configuration file generated for raise-ticket on 2026-08-23T12:33:21Z
+#
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+#
 
-app = "raise-ticket"
-primary_region = "iad"
+app = 'raise-ticket'
+primary_region = 'iad'
 
 [build]
 
 [env]
-  PORT = "8080"
-  NODE_ENV = "production"
+  NODE_ENV = 'production'
+  PORT = '8080'
 
 [http_service]
   internal_port = 8080
   force_https = true
-  auto_stop_machines = true
+  auto_stop_machines = 'stop'
   auto_start_machines = true
   min_machines_running = 0
 
   [http_service.concurrency]
-    type = "connections"
+    type = 'connections'
     hard_limit = 25
     soft_limit = 20
 
 [[vm]]
-  memory = "512mb"
-  cpu_kind = "shared"
+  memory = '512mb'
+  cpu_kind = 'shared'
   cpus = 1
+  memory_mb = 512
