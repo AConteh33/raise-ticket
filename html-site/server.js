@@ -467,6 +467,33 @@ app.post("/api/setup", async (req, res) => {
   res.json({ ok: true, message: `Admin created: ${email}` });
 });
 
+app.post("/api/seed-users", (req, res) => {
+  const bcrypt = require("bcryptjs");
+  const { getDb, nowIso, newId } = require("../db/index");
+
+  const defaults = [
+    { email: "immigration@ticket.com", name: "Immigration Officer", role: "immigration" },
+    { email: "labour@ticket.com", name: "Labour Officer", role: "labour" },
+    { email: "protec@ticket.com", name: "Protec Officer", role: "protec" },
+    { email: "compliance@ticket.com", name: "Compliance Officer", role: "compliance" },
+    { email: "analyst@ticket.com", name: "Analyst", role: "analyst" },
+  ];
+
+  const hash = bcrypt.hashSync("Password123", 10);
+  const created = [];
+  const stmt = getDb().prepare(
+    "INSERT INTO users (id, email, password_hash, display_name, role, created_at) VALUES (?, ?, ?, ?, ?, ?)"
+  );
+  for (const u of defaults) {
+    const exists = getDb().prepare("SELECT id FROM users WHERE email = ?").get(u.email);
+    if (!exists) {
+      stmt.run(newId(), u.email, hash, u.name, u.role, nowIso());
+      created.push(u.email);
+    }
+  }
+  res.json({ ok: true, created, message: `Created ${created.length} users (all Password123)` });
+});
+
 const API_ONLY = isApiOnlyMode;
 
 if (!API_ONLY) {
@@ -476,6 +503,7 @@ if (!API_ONLY) {
     "/api/auth/me",
     "/api/health",
     "/api/setup",
+    "/api/seed-users",
   ]);
 
   const PUBLIC_PREFIXES = [
