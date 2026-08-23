@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Unified Permit Compliance Tickets</title>
+  <link rel="stylesheet" href="/css/styles.css?v=17" />
+</head>
+<body>
+  <header class="header">
+    <div class="header-bar"></div>
+    <div class="container header-inner">
+      <div>
+        <h1 class="text-gradient" style="margin:0;font-size:1.5rem">Unified Permit Compliance Tickets</h1>
+        <p class="subtitle">Track permit compliance cases by officer, status, and client.</p>
+      </div>
+      <div class="header-actions">
+        <a id="stats-link" href="/stats.html" class="btn-secondary hidden">Stats</a>
+        <a id="admin-form-link" href="/admin-form.html" class="btn-secondary hidden">Customize Form</a>
+        <a id="admin-link" href="/admin-users.html" class="btn-secondary hidden">Manage Users</a>
+        <div class="user-meta">
+          <div id="user-name"></div>
+          <div id="user-role" class="user-role"></div>
+        </div>
+        <button id="logout-btn" class="btn-secondary" type="button">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div id="provisioned-error" class="alert alert-error hidden" style="margin-top:1rem">
+      Your account exists but has no role assigned. Contact an administrator.
+    </div>
+
+    <div id="dashboard" class="grid hidden" style="margin-top:2rem">
+      <aside id="form-aside" class="hidden">
+        <form id="ticket-form" class="card">
+          <h2 class="text-gradient" data-form-title>New Compliance Ticket</h2>
+          <div id="form-error" class="alert alert-error hidden"></div>
+          <div data-form-fields></div>
+          <button class="btn-primary" type="submit" data-submit-btn>Submit Ticket</button>
+        </form>
+      </aside>
+
+      <section id="tickets-section">
+        <h2 class="text-gradient" id="tickets-heading" style="margin:0 0 1rem">Tickets</h2>
+        <div id="analyst-banner" class="alert alert-info hidden">
+          View-only access — you can see all tickets and activity history but cannot make changes.
+        </div>
+        <div id="data-tools" class="card data-tools hidden">
+          <h3 class="stats-title">Excel data</h3>
+          <p class="data-tools-hint">Import replaces or merges tickets from an .xlsx workbook. Export downloads every ticket.</p>
+          <div class="data-tools-row">
+            <a id="excel-export-btn" class="btn-secondary" href="/api/admin/excel/export" download>Export to Excel</a>
+            <label class="btn-secondary excel-import-label">
+              Import from Excel
+              <input id="excel-import-input" type="file" accept=".xlsx" hidden />
+            </label>
+            <label class="data-tools-mode">
+              <input type="radio" name="excel-import-mode" value="merge" checked /> Merge
+            </label>
+            <label class="data-tools-mode">
+              <input type="radio" name="excel-import-mode" value="replace" /> Replace all
+            </label>
+          </div>
+          <div id="excel-status" class="excel-status"></div>
+        </div>
+        <div class="ticket-toolbar">
+          <label class="ticket-search" for="ticket-search">
+            <span class="ticket-search-label">Search</span>
+            <input
+              id="ticket-search"
+              type="search"
+              placeholder="Client name, NIN, ticket #…"
+              autocomplete="off"
+              spellcheck="false"
+            />
+          </label>
+        </div>
+        <div id="officer-filters" class="filters"></div>
+        <div id="filters" class="filters"></div>
+        <div id="ticket-list" class="ticket-list"></div>
+        <div id="empty-state" class="empty hidden">
+          <span class="empty-icon" aria-hidden="true"></span>
+          <p class="empty-title">No tickets yet</p>
+          <p class="empty-text">Tickets matching this filter will appear here.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="/js/config.js?v=10"></script>
+  <script src="/js/api.js?v=10"></script>
+  <script src="/js/constants.js"></script>
+  <script src="/js/permissions.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/form-config-api.js"></script>
+  <script src="/js/form-builder.js?v=11"></script>
+  <script src="/js/tickets.js?v=11"></script>
+  <script src="/js/activity.js?v=6"></script>
+  <script src="/js/comments.js?v=13"></script>
+  <script src="/js/sla.js?v=1"></script>
+  <script src="/js/stats.js?v=1"></script>
+  <script src="/js/app.js?v=19"></script>
+</body>
+</html>

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Stats — Unified Permit Compliance Tickets</title>
+  <link rel="stylesheet" href="/css/styles.css?v=17" />
+</head>
+<body>
+  <header class="header">
+    <div class="header-bar"></div>
+    <div class="container header-inner">
+      <div>
+        <h1 class="text-gradient" style="margin:0;font-size:1.5rem">Analytics</h1>
+        <p class="subtitle">Case volumes and outcomes across statuses and officers.</p>
+      </div>
+      <div class="header-actions">
+        <a href="/index.html" class="btn-secondary">&larr; Tickets</a>
+        <div class="user-meta">
+          <div id="user-name"></div>
+          <div id="user-role" class="user-role"></div>
+        </div>
+        <button id="logout-btn" class="btn-secondary" type="button">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container stats-page-main">
+    <section class="card range-toolbar">
+      <span class="ticket-search-label">Period</span>
+      <div class="range-presets" id="range-presets">
+        <button type="button" class="filter-btn" data-preset="week">This week</button>
+        <button type="button" class="filter-btn" data-preset="7d">Last 7 days</button>
+        <button type="button" class="filter-btn" data-preset="30d">Last 30 days</button>
+        <button type="button" class="filter-btn" data-preset="month">This month</button>
+        <button type="button" class="filter-btn active" data-preset="all">All time</button>
+        <button type="button" class="filter-btn" data-preset="custom">Custom</button>
+      </div>
+      <div class="range-custom hidden" id="range-custom">
+        <label>From <input type="date" id="range-from" /></label>
+        <label>To <input type="date" id="range-to" /></label>
+      </div>
+    </section>
+
+    <section class="card stats-panel">
+      <h2 class="text-gradient" id="stats-heading" style="margin:0 0 0.25rem">Team stats</h2>
+      <p class="analytics-subtitle" id="overview-caption"></p>
+      <p id="stats-error" class="alert alert-error hidden"></p>
+      <div id="stats-table"><p class="stats-caption">Loading…</p></div>
+    </section>
+
+    <section class="card stats-panel">
+      <h2 class="text-gradient" style="margin:0 0 0.25rem">What's happening most</h2>
+      <p class="analytics-subtitle" id="trend-caption"></p>
+      <div class="trend-grid">
+        <div>
+          <h3 class="ticket-section-label">By issue category</h3>
+          <div id="trend-categories"><p class="stats-caption">Loading…</p></div>
+        </div>
+        <div>
+          <h3 class="ticket-section-label">By compliance officer</h3>
+          <div id="trend-officers"><p class="stats-caption">Loading…</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card stats-panel">
+      <h2 class="text-gradient" style="margin:0 0 0.25rem">This week</h2>
+      <p class="analytics-subtitle" id="week-range"></p>
+      <div id="week-categories"><p class="stats-caption">Loading…</p></div>
+    </section>
+
+    <section class="card stats-panel">
+      <h2 class="text-gradient" style="margin:0 0 1rem">Handling speed</h2>
+      <div id="speed-panel"><p class="stats-caption">Loading…</p></div>
+    </section>
+
+    <section class="card stats-panel">
+      <h2 class="text-gradient" style="margin:0 0 0.25rem">3-business-day target</h2>
+      <p class="analytics-subtitle">Open cases should reach Resolved within 3 business days of creation — Saturdays and Sundays don't count. Cases being worked (In Progress) are exempt.</p>
+      <div id="sla-panel"><p class="stats-caption">Loading…</p></div>
+    </section>
+  </main>
+
+  <script src="/js/config.js?v=10"></script>
+  <script src="/js/api.js?v=10"></script>
+  <script src="/js/constants.js"></script>
+  <script src="/js/permissions.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/form-config-api.js"></script>
+  <script src="/js/tickets.js?v=11"></script>
+  <script src="/js/sla.js?v=1"></script>
+  <script src="/js/stats.js?v=1"></script>
+  <script src="/js/stats-page.js?v=4"></script>
+</body>
+</html>

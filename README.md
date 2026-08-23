@@ -1,36 +1,86 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Issue Tracker
 
-## Getting Started
+A ticketing system for raising new issues and tracking their status. Plain HTML/CSS/JavaScript frontend with a SQLite database backend.
 
-First, run the development server:
+## Features
+
+- **Structured intake form** — issue type, explanation, leaving-soon urgency, and 2 image uploads
+- **Status workflow** — Open → In Progress → Resolved → Closed
+- **Filter by status** — quick counts per status
+- **Role-based access** — Immigration, Labour, Protec, Analysts, and Admin roles
+- **Activity log** — ticket creation, status changes, and deletions
+- **Delete tickets** — admins only
+
+## Quick Start
+
+### 1. Install dependencies
+
+```bash
+npm install
+```
+
+### 2. Configure environment
+
+Copy `.env.local.example` to `.env.local` and adjust if needed:
+
+```env
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=admin123
+ADMIN_NAME=Admin
+```
+
+### 3. Create the database and first admin
+
+```bash
+npm run db:seed
+```
+
+### 4. Run the app
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:8080](http://localhost:8080).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Default admin: `admin@example.com` / `admin123`
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Roles
 
-## Learn More
+| Role        | Permissions |
+|-------------|-------------|
+| Immigration | Create tickets, view & update only their own |
+| Labour      | Create tickets, view & update only their own |
+| Protec      | Create tickets, view & update only their own |
+| Compliance  | Create tickets, view & update only their own |
+| Analysts    | View all tickets and activity history (read-only) |
+| Admin       | Full access — all tickets, create, update, delete, manage users |
 
-To learn more about Next.js, take a look at the following resources:
+## Database
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+SQLite file: `data/app.db` (override with `DATABASE_PATH` in `.env.local`).
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Images are stored in the database and served at `/api/images/[id]` (session cookie required).
 
-## Deploy on Vercel
+## Project Structure
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+db/               # SQLite schema, auth, tickets, seed
+html-site/
+  server.js       # Express API + static file server
+  index.html      # Dashboard
+  login.html      # Sign in
+  admin-users.html
+  css/ js/        # Frontend assets
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Port
+
+Set `HTML_SITE_PORT` in `.env.local` to change the default port (8080).
+
+## Deploy (Firebase or Netlify + ngrok)
+
+Host the **frontend** on **Firebase Hosting** or **Netlify** (free). Keep the **database + API** on your PC via **ngrok**.
+
+- **Firebase:** see **[DEPLOY.md](./DEPLOY.md#firebase-hosting-frontend)**
+- **Netlify:** see **[DEPLOY.md](./DEPLOY.md)**

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customize Form — Issue Tracker</title>
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body>
+  <header class="header">
+    <div class="header-bar"></div>
+    <div class="container header-inner">
+      <div>
+        <h1 class="text-gradient" style="margin:0;font-size:1.5rem">Customize Issue Form</h1>
+        <p class="subtitle">Configure labels, options, and fields for raising new tickets.</p>
+      </div>
+      <div class="header-actions">
+        <a href="/index.html" class="btn-secondary">← Back to tickets</a>
+        <button id="logout-btn" class="btn-secondary" type="button">Sign out</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container" style="padding:2rem 0;max-width:52rem">
+    <p id="page-loading" class="subtitle">Loading form settings…</p>
+    <div id="page-error" class="alert alert-error hidden"></div>
+    <div id="access-denied" class="alert alert-error hidden">Admin access required.</div>
+
+    <div id="editor" class="hidden">
+      <div id="save-error" class="alert alert-error hidden"></div>
+      <div id="save-success" class="alert alert-success hidden"></div>
+
+      <div class="card" style="margin-bottom:1.5rem">
+        <h2 class="text-gradient">Form settings</h2>
+        <label for="form-title">Form title</label>
+        <input id="form-title" />
+        <label for="submit-label">Submit button label</label>
+        <input id="submit-label" />
+      </div>
+
+      <div class="card" style="margin-bottom:1.5rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+          <h2 class="text-gradient" style="margin:0">Fields</h2>
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+            <button type="button" class="btn-secondary" id="add-text-field">+ Text</button>
+            <button type="button" class="btn-secondary" id="add-textarea-field">+ Textarea</button>
+            <button type="button" class="btn-secondary" id="add-select-field">+ Dropdown</button>
+          </div>
+        </div>
+        <div id="field-list"></div>
+      </div>
+
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap">
+        <button type="button" class="btn-primary" id="save-btn">Save changes</button>
+        <button type="button" class="btn-secondary" id="reset-btn">Reset to defaults</button>
+      </div>
+    </div>
+  </main>
+
+  <script src="/js/config.js?v=10"></script>
+  <script src="/js/api.js?v=10"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/form-config-api.js"></script>
+  <script src="/js/admin-form.js"></script>
+</body>
+</html>

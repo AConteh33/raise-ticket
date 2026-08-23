@@ -3,24 +3,32 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "eslint"
+    "dev": "node html-site/server.js",
+    "dev:api": "node scripts/run-api.js",
+    "start": "node html-site/server.js",
+    "start:api": "node scripts/run-api.js",
+    "db:seed": "node db/seed.js",
+    "db:sync-form": "node scripts/sync-form-config.js",
+    "db:import-excel": "python scripts/import-excel-tickets.py --replace",
+    "tunnel": "ngrok http 8080",
+    "tunnel:win": "scripts\\tunnel.cmd",
+    "start-backend": "node scripts/run-api.js",
+    "shortcut": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/create-desktop-shortcut.ps1",
+    "netlify:config": "node scripts/write-frontend-config.js",
+    "firebase:config": "node scripts/write-frontend-config.js",
+    "firebase:deploy": "npx firebase deploy --only hosting",
+    "test:api": "node scripts/test-api-contract.js"
   },
   "dependencies": {
-    "next": "16.2.9",
-    "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^12.11.1",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^17.4.2",
+    "exceljs": "^4.4.0",
+    "express": "^5.2.1",
+    "multer": "^2.2.0"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.9",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "firebase-tools": "^15.22.3"
   }
 }

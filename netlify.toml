@@ -1,0 +1,9 @@
+[build]
+  publish = "html-site"
+  command = "npm run netlify:config"
+
+# Do not expose the Node server file as a static download
+[[redirects]]
+  from = "/server.js"
+  to = "/404"
+  status = 404
