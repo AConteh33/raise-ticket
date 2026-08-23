@@ -438,6 +438,35 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
+app.post("/api/setup", async (req, res) => {
+  const bcrypt = require("bcryptjs");
+  const { getDb, nowIso, newId } = require("../db/index");
+  const { userCount } = require("../db/auth");
+
+  function env(name) {
+    return process.env[name] || process.env[name.toLowerCase()] || process.env[name.toUpperCase()];
+  }
+
+  if (userCount() > 0) {
+    const { email, password } = req.body || {};
+    if (!email || !password) return res.status(400).json({ error: "email and password required" });
+    const user = getDb().prepare("SELECT id FROM users WHERE email = ?").get(email);
+    if (!user) return res.status(404).json({ error: "User not found" });
+    const hash = bcrypt.hashSync(password, 10);
+    getDb().prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(hash, user.id);
+    return res.json({ ok: true, message: `Password updated for ${email}` });
+  }
+
+  const email = env("ADMIN_EMAIL") || "admin@example.com";
+  const password = env("ADMIN_PASSWORD") || "admin123";
+  const displayName = env("ADMIN_NAME") || "Admin";
+  const hash = bcrypt.hashSync(password, 10);
+  getDb().prepare(
+    `INSERT INTO users (id, email, password_hash, display_name, role, created_at) VALUES (?, ?, ?, ?, 'admin', ?)`
+  ).run(newId(), email, hash, displayName, nowIso());
+  res.json({ ok: true, message: `Admin created: ${email}` });
+});
+
 const API_ONLY = isApiOnlyMode;
 
 if (!API_ONLY) {
@@ -446,6 +475,7 @@ if (!API_ONLY) {
     "/api/auth/login",
     "/api/auth/me",
     "/api/health",
+    "/api/setup",
   ]);
 
   const PUBLIC_PREFIXES = [
