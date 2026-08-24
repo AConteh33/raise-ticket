@@ -12,6 +12,7 @@ const dbComments = require("../db/comments");
 const dbExcel = require("../db/excel");
 const dbAnalytics = require("../db/analytics");
 const { canCreateTickets, canDeleteTicket, canCommentTicket } = require("../db/permissions");
+const { getDb } = require("../db/index");
 
 const app = express();
 const PORT = process.env.PORT || process.env.HTML_SITE_PORT || 8080;
@@ -145,6 +146,20 @@ app.post("/api/auth/logout", (req, res) => {
   if (token) dbAuth.deleteSession(token);
   clearSession(res, req);
   res.json({ ok: true });
+});
+
+app.post("/api/reset-password", (req, res) => {
+  const bcrypt = require("bcryptjs");
+  const user = getUser(req);
+  if (!user) return res.status(401).json({ error: "Unauthorized" });
+
+  const { newPassword, pincode } = req.body || {};
+  if (pincode !== "1007") return res.status(403).json({ error: "Invalid pincode" });
+  if (!newPassword || newPassword.length < 6) return res.status(400).json({ error: "Password must be at least 6 characters" });
+
+  const hash = bcrypt.hashSync(newPassword, 10);
+  getDb().prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(hash, user.id);
+  res.json({ ok: true, message: "Password updated" });
 });
 
 app.get("/api/auth/me", (req, res) => {

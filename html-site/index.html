@@ -22,6 +22,7 @@
           <div id="user-name"></div>
           <div id="user-role" class="user-role"></div>
         </div>
+        <button id="reset-password-btn" class="btn-secondary" type="button">Reset Password</button>
         <button id="logout-btn" class="btn-secondary" type="button">Sign out</button>
       </div>
     </div>
@@ -88,6 +89,24 @@
       </section>
     </div>
   </main>
+
+  <div id="reset-password-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h2 class="text-gradient" style="margin:0 0 1rem">Reset Password</h2>
+      <div id="reset-password-error" class="alert alert-error hidden"></div>
+      <div id="reset-password-success" class="alert alert-success hidden"></div>
+      <form id="reset-password-form">
+        <label for="rp-new-password">New Password</label>
+        <input id="rp-new-password" type="password" required minlength="6" />
+        <label for="rp-pincode">Pincode</label>
+        <input id="rp-pincode" type="password" required maxlength="4" placeholder="Enter pincode" />
+        <div class="modal-actions">
+          <button type="submit" class="btn-primary">Update Password</button>
+          <button type="button" class="btn-secondary" id="rp-cancel-btn">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script src="/js/config.js?v=10"></script>
   <script src="/js/api.js?v=10"></script>
