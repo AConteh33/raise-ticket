@@ -453,6 +453,21 @@ app.get("/api/health", (_req, res) => {
   });
 });
 
+app.post("/api/forgot-password", (req, res) => {
+  const bcrypt = require("bcryptjs");
+  const { email, newPassword, pincode } = req.body || {};
+  if (pincode !== "1007") return res.status(403).json({ error: "Invalid pincode" });
+  if (!email || !newPassword) return res.status(400).json({ error: "Email and password required" });
+  if (newPassword.length < 6) return res.status(400).json({ error: "Password must be at least 6 characters" });
+
+  const user = getDb().prepare("SELECT id FROM users WHERE email = ?").get(email);
+  if (!user) return res.status(404).json({ error: "User not found" });
+
+  const hash = bcrypt.hashSync(newPassword, 10);
+  getDb().prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(hash, user.id);
+  res.json({ ok: true, message: "Password updated" });
+});
+
 app.post("/api/setup", async (req, res) => {
   const bcrypt = require("bcryptjs");
   const { getDb, nowIso, newId } = require("../db/index");
@@ -519,6 +534,7 @@ if (!API_ONLY) {
     "/api/health",
     "/api/setup",
     "/api/seed-users",
+    "/api/forgot-password",
   ]);
 
   const PUBLIC_PREFIXES = [
