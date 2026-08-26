@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sign in — Issue Tracker</title>
-  <link rel="stylesheet" href="/css/styles.css" />
+  <link rel="stylesheet" href="/css/styles.css?v=1.0" />
 </head>
 <body>
   <div class="login-wrap">
@@ -22,10 +22,34 @@
       <p class="subtitle" style="margin-top:1.5rem;font-size:0.75rem;text-align:center">
         First time? Run <code>npm run db:seed</code> to create an admin account.
       </p>
+      <p style="margin-top:0.75rem;text-align:center">
+        <button type="button" id="forgot-btn" style="background:none;border:none;color:#6366f1;cursor:pointer;font-size:0.8rem;text-decoration:underline">Forgot Password?</button>
+      </p>
+      <p class="subtitle" style="margin-top:1rem;font-size:0.65rem;text-align:center;opacity:0.6">v1.0</p>
     </div>
   </div>
-  <script src="/js/config.js?v=10"></script>
-  <script src="/js/api.js?v=10"></script>
+
+  <div id="forgot-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h2 class="text-gradient" style="margin:0 0 1rem">Reset Password</h2>
+      <div id="forgot-error" class="alert alert-error hidden"></div>
+      <div id="forgot-success" class="alert alert-success hidden"></div>
+      <form id="forgot-form">
+        <label for="forgot-email">Email</label>
+        <input id="forgot-email" type="email" required />
+        <label for="forgot-new-password">New Password</label>
+        <input id="forgot-new-password" type="password" required minlength="6" />
+        <label for="forgot-pincode">Pincode</label>
+        <input id="forgot-pincode" type="password" required maxlength="4" placeholder="Enter pincode" />
+        <div class="modal-actions">
+          <button type="submit" class="btn-primary">Update Password</button>
+          <button type="button" class="btn-secondary" id="forgot-cancel-btn">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script src="/js/config.js?v=1.0"></script>
+  <script src="/js/api.js?v=1.0"></script>
   <script src="/js/auth.js"></script>
   <script>
     Auth.onAuthChange(({ profile, ready }) => {
@@ -51,6 +75,42 @@
       } finally {
         btn.disabled = false;
         btn.textContent = "Sign in";
+      }
+    };
+    document.getElementById("forgot-btn").onclick = () => {
+      document.getElementById("forgot-modal").classList.remove("hidden");
+      document.getElementById("forgot-email").value = "";
+      document.getElementById("forgot-new-password").value = "";
+      document.getElementById("forgot-pincode").value = "";
+      document.getElementById("forgot-error").classList.add("hidden");
+      document.getElementById("forgot-success").classList.add("hidden");
+    };
+    document.getElementById("forgot-cancel-btn").onclick = () => {
+      document.getElementById("forgot-modal").classList.add("hidden");
+    };
+    document.getElementById("forgot-form").onsubmit = async (e) => {
+      e.preventDefault();
+      const errEl = document.getElementById("forgot-error");
+      const sucEl = document.getElementById("forgot-success");
+      errEl.classList.add("hidden");
+      sucEl.classList.add("hidden");
+      try {
+        const res = await Api.apiFetch("/api/forgot-password", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: document.getElementById("forgot-email").value,
+            newPassword: document.getElementById("forgot-new-password").value,
+            pincode: document.getElementById("forgot-pincode").value,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error);
+        sucEl.textContent = "Password updated! You can now sign in.";
+        sucEl.classList.remove("hidden");
+      } catch (err) {
+        errEl.textContent = err.message || "Failed to reset password";
+        errEl.classList.remove("hidden");
       }
     };
   </script>

@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Unified Permit Compliance Tickets</title>
-  <link rel="stylesheet" href="/css/styles.css?v=17" />
+  <link rel="stylesheet" href="/css/styles.css?v=1.0" />
 </head>
 <body>
   <header class="header">
@@ -22,6 +22,7 @@
           <div id="user-name"></div>
           <div id="user-role" class="user-role"></div>
         </div>
+        <button id="reset-password-btn" class="btn-secondary" type="button">Reset Password</button>
         <button id="logout-btn" class="btn-secondary" type="button">Sign out</button>
       </div>
     </div>
@@ -89,18 +90,36 @@
     </div>
   </main>
 
-  <script src="/js/config.js?v=10"></script>
-  <script src="/js/api.js?v=10"></script>
+  <div id="reset-password-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h2 class="text-gradient" style="margin:0 0 1rem">Reset Password</h2>
+      <div id="reset-password-error" class="alert alert-error hidden"></div>
+      <div id="reset-password-success" class="alert alert-success hidden"></div>
+      <form id="reset-password-form">
+        <label for="rp-new-password">New Password</label>
+        <input id="rp-new-password" type="password" required minlength="6" />
+        <label for="rp-pincode">Pincode</label>
+        <input id="rp-pincode" type="password" required maxlength="4" placeholder="Enter pincode" />
+        <div class="modal-actions">
+          <button type="submit" class="btn-primary">Update Password</button>
+          <button type="button" class="btn-secondary" id="rp-cancel-btn">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/js/config.js?v=1.0"></script>
+  <script src="/js/api.js?v=1.0"></script>
   <script src="/js/constants.js"></script>
   <script src="/js/permissions.js"></script>
   <script src="/js/auth.js"></script>
   <script src="/js/form-config-api.js"></script>
-  <script src="/js/form-builder.js?v=11"></script>
-  <script src="/js/tickets.js?v=11"></script>
-  <script src="/js/activity.js?v=6"></script>
-  <script src="/js/comments.js?v=13"></script>
-  <script src="/js/sla.js?v=1"></script>
-  <script src="/js/stats.js?v=1"></script>
-  <script src="/js/app.js?v=19"></script>
+  <script src="/js/form-builder.js?v=1.0"></script>
+  <script src="/js/tickets.js?v=1.0"></script>
+  <script src="/js/activity.js?v=1.0"></script>
+  <script src="/js/comments.js?v=1.0"></script>
+  <script src="/js/sla.js?v=1.0"></script>
+  <script src="/js/stats.js?v=1.0"></script>
+  <script src="/js/app.js?v=1.0"></script>
 </body>
 </html>

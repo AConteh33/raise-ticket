@@ -766,6 +766,41 @@ function setupDashboard(profile) {
   $("user-role").textContent = C.ROLE_LABELS[profile.role];
   $("logout-btn").onclick = () => Auth.logout();
 
+  $("reset-password-btn").onclick = () => {
+    $("reset-password-modal").classList.remove("hidden");
+    $("rp-new-password").value = "";
+    $("rp-pincode").value = "";
+    $("reset-password-error").classList.add("hidden");
+    $("reset-password-success").classList.add("hidden");
+  };
+  $("rp-cancel-btn").onclick = () => $("reset-password-modal").classList.add("hidden");
+  $("reset-password-form").onsubmit = async (e) => {
+    e.preventDefault();
+    const errEl = $("reset-password-error");
+    const sucEl = $("reset-password-success");
+    errEl.classList.add("hidden");
+    sucEl.classList.add("hidden");
+    try {
+      const res = await Api.apiFetch("/api/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          newPassword: $("rp-new-password").value,
+          pincode: $("rp-pincode").value,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      sucEl.textContent = "Password updated! Sign in with your new password.";
+      sucEl.classList.remove("hidden");
+      $("rp-new-password").value = "";
+      $("rp-pincode").value = "";
+    } catch (err) {
+      errEl.textContent = err.message || "Failed to reset password";
+      errEl.classList.remove("hidden");
+    }
+  };
+
   const statsLink = $("stats-link");
   if (statsLink) {
     statsLink.textContent = officerBreakdownEnabled ? "Team stats" : "My stats";

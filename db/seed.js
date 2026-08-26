@@ -4,9 +4,13 @@ const bcrypt = require("bcryptjs");
 const { getDb, nowIso, newId } = require("./index");
 const { userCount } = require("./auth");
 
-const email = process.env.ADMIN_EMAIL || "admin@example.com";
-const password = process.env.ADMIN_PASSWORD || "admin123";
-const displayName = process.env.ADMIN_NAME || "Admin";
+function env(name) {
+  return process.env[name] || process.env[name.toLowerCase()] || process.env[name.toUpperCase()];
+}
+
+const email = env("ADMIN_EMAIL") || "admin@example.com";
+const password = env("ADMIN_PASSWORD") || "admin123";
+const displayName = env("ADMIN_NAME") || "Admin";
 
 if (userCount() > 0) {
   console.log("Users already exist. Skipping seed.");
