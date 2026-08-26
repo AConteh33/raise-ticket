@@ -481,10 +481,16 @@ app.post("/api/setup", async (req, res) => {
     const { email, password } = req.body || {};
     if (!email || !password) return res.status(400).json({ error: "email and password required" });
     const user = getDb().prepare("SELECT id FROM users WHERE email = ?").get(email);
-    if (!user) return res.status(404).json({ error: "User not found" });
+    if (user) {
+      const hash = bcrypt.hashSync(password, 10);
+      getDb().prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(hash, user.id);
+      return res.json({ ok: true, message: `Password updated for ${email}` });
+    }
     const hash = bcrypt.hashSync(password, 10);
-    getDb().prepare("UPDATE users SET password_hash = ? WHERE id = ?").run(hash, user.id);
-    return res.json({ ok: true, message: `Password updated for ${email}` });
+    getDb().prepare(
+      `INSERT INTO users (id, email, password_hash, display_name, role, created_at) VALUES (?, ?, ?, ?, 'admin', ?)`
+    ).run(newId(), email, hash, email.split("@")[0], nowIso());
+    return res.json({ ok: true, message: `User created: ${email}` });
   }
 
   const email = env("ADMIN_EMAIL") || "admin@example.com";
