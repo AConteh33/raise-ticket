@@ -615,7 +615,7 @@ async function renderTickets() {
 function setupForm() {
   const form = $("ticket-form");
   FormBuilder.renderTicketForm(form, formConfig);
-  imageState = { images: [], previewUrls: [] };
+  imageState = { images: [], previewUrls: [], resetImages: () => {} };
   FormBuilder.setupImagePicker(form, imageState);
 
   const duplicateWarning = document.createElement("div");
@@ -636,7 +636,8 @@ function setupForm() {
 
     const match = Tickets.checkDuplicateClient(name, nin, null, allTickets);
     if (match) {
-      duplicateWarning.textContent = `A case for this client is already open (ticket #${match.ticketNumber || "?"}). It must be resolved before creating a new one.`;
+      const officer = match.complianceOfficer ? officerLabel(match.complianceOfficer) : "Unknown";
+      duplicateWarning.textContent = `A case for this client is already open (ticket #${match.ticketNumber || "?"}). Handled by: ${officer}. It must be resolved before creating a new one.`;
       show(duplicateWarning);
     } else {
       hide(duplicateWarning);
@@ -669,7 +670,8 @@ function setupForm() {
       allTickets
     );
     if (dupMatch) {
-      errorEl.textContent = `A case for this client is already open (ticket #${dupMatch.ticketNumber || "?"}). It must be resolved before creating a new one.`;
+      const officer = dupMatch.complianceOfficer ? officerLabel(dupMatch.complianceOfficer) : "Unknown";
+      errorEl.textContent = `A case for this client is already open (ticket #${dupMatch.ticketNumber || "?"}). Handled by: ${officer}. It must be resolved before creating a new one.`;
       show(errorEl);
       return;
     }

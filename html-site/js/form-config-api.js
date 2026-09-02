@@ -1,19 +1,13 @@
-async function fetchFormConfig() {
-  const res = await Api.apiFetch("/api/form-config");
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Failed to load form config");
-  return data.config;
-}
+const FormConfigAPI = {
+  async get() {
+    const snap = await db.collection("settings").doc("formConfig").get();
+    return snap.exists ? snap.data() : null;
+  },
 
-async function saveFormConfig(config) {
-  const res = await Api.apiFetch("/api/form-config", {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(config),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Failed to save form config");
-  return data.config;
-}
+  async save(config) {
+    await db.collection("settings").doc("formConfig").set(config);
+    return config;
+  },
+};
 
-window.FormConfigApi = { fetchFormConfig, saveFormConfig };
+window.FormConfigAPI = FormConfigAPI;

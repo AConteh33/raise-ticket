@@ -140,8 +140,9 @@ function createTicket(input, images, options = {}) {
   if (!options.skipDuplicateCheck) {
     const existing = findOpenTicketForClient(input.applicantName, input.nin);
     if (existing) {
+      const officer = existing.compliance_officer || "Unknown";
       const err = new Error(
-        `A case for this client is already open (ticket #${existing.ticket_number})`
+        `A case for this client is already open (ticket #${existing.ticket_number}). Handled by: ${officer}`
       );
       err.statusCode = 409;
       throw err;

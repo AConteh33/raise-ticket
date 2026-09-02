@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Sign in — Issue Tracker</title>
-  <link rel="stylesheet" href="/css/styles.css?v=1.2" />
+  <link rel="stylesheet" href="/css/styles.css?v=1.3" />
 </head>
 <body>
   <div class="login-wrap">
@@ -25,7 +25,10 @@
       <p style="margin-top:0.75rem;text-align:center">
         <button type="button" id="forgot-btn" style="background:none;border:none;color:#6366f1;cursor:pointer;font-size:0.8rem;text-decoration:underline">Forgot Password?</button>
       </p>
-      <p class="subtitle" style="margin-top:1rem;font-size:0.65rem;text-align:center;opacity:0.6">v1.2</p>
+      <p style="margin-top:0.5rem;text-align:center">
+        <button type="button" id="create-account-btn" style="background:none;border:none;color:#6366f1;cursor:pointer;font-size:0.8rem;text-decoration:underline">Create Account</button>
+      </p>
+      <p class="subtitle" style="margin-top:1rem;font-size:0.65rem;text-align:center;opacity:0.6">v1.3</p>
     </div>
   </div>
 
@@ -48,15 +51,49 @@
       </form>
     </div>
   </div>
-  <script src="/js/config.js?v=1.2"></script>
-  <script src="/js/api.js?v=1.2"></script>
+
+  <div id="create-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <h2 class="text-gradient" style="margin:0 0 1rem">Create Account</h2>
+      <div id="create-error" class="alert alert-error hidden"></div>
+      <div id="create-success" class="alert alert-success hidden"></div>
+      <form id="create-form">
+        <label for="create-name">Full Name</label>
+        <input id="create-name" type="text" required />
+        <label for="create-email">Email</label>
+        <input id="create-email" type="email" required />
+        <label for="create-password">Password</label>
+        <input id="create-password" type="password" required minlength="6" />
+        <label for="create-role">Role</label>
+        <select id="create-role" required>
+          <option value="immigration">Immigration</option>
+          <option value="labour">Labour</option>
+          <option value="protec">Protec</option>
+          <option value="compliance">Compliance</option>
+          <option value="analyst">Analyst</option>
+        </select>
+        <label for="create-pincode">Admin Pincode</label>
+        <input id="create-pincode" type="password" required maxlength="4" placeholder="Enter 1007" />
+        <div class="modal-actions">
+          <button type="submit" class="btn-primary">Create Account</button>
+          <button type="button" class="btn-secondary" id="create-cancel-btn">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <script src="/js/firebase-config.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+  <script src="/js/firebase-init.js"></script>
+  <script src="/js/api.js"></script>
   <script src="/js/auth.js"></script>
+  <script src="/js/constants.js"></script>
   <script>
     Auth.onAuthChange(({ profile, ready }) => {
       if (!ready) return;
       if (profile) window.location.href = "/index.html";
     });
-    Auth.initAuth();
     document.getElementById("login-form").onsubmit = async (e) => {
       e.preventDefault();
       const errorEl = document.getElementById("error");
@@ -94,22 +131,75 @@
       const sucEl = document.getElementById("forgot-success");
       errEl.classList.add("hidden");
       sucEl.classList.add("hidden");
+      const pincode = document.getElementById("forgot-pincode").value;
+      if (pincode !== "1007") { errEl.textContent = "Invalid pincode"; errEl.classList.remove("hidden"); return; }
+      const email = document.getElementById("forgot-email").value;
+      const newPassword = document.getElementById("forgot-new-password").value;
       try {
-        const res = await Api.apiFetch("/api/forgot-password", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: document.getElementById("forgot-email").value,
-            newPassword: document.getElementById("forgot-new-password").value,
-            pincode: document.getElementById("forgot-pincode").value,
-          }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error);
-        sucEl.textContent = "Password updated! You can now sign in.";
-        sucEl.classList.remove("hidden");
+        const snap = await db.collection("users").where("email", "==", email).get();
+        if (snap.empty) { errEl.textContent = "User not found"; errEl.classList.remove("hidden"); return; }
+        const uid = snap.docs[0].id;
+        const adminCred = await fbAuth.signInWithEmailAndPassword(email, newPassword).catch(() => null);
+        if (!adminCred) {
+          const tempApp = firebase.initializeApp(FIREBASE_CONFIG, "temp_" + Date.now());
+          const tempAuth = tempApp.auth();
+          const tempSnap = await db.collection("users").get();
+          let found = false;
+          for (const doc of tempSnap.docs) {
+            try {
+              await tempAuth.signInWithEmailAndPassword(doc.data().email, newPassword);
+              found = true;
+              break;
+            } catch {}
+          }
+          tempApp.delete();
+          if (!found) { errEl.textContent = "Cannot verify identity. Contact admin."; errEl.classList.remove("hidden"); return; }
+        }
+        const newPass = document.getElementById("forgot-new-password").value;
+        await fbAuth.signOut();
+        errEl.textContent = "Use Firebase Console to reset password, or contact admin.";
+        errEl.classList.remove("hidden");
       } catch (err) {
         errEl.textContent = err.message || "Failed to reset password";
+        errEl.classList.remove("hidden");
+      }
+    };
+    document.getElementById("create-account-btn").onclick = () => {
+      document.getElementById("create-modal").classList.remove("hidden");
+      document.getElementById("create-name").value = "";
+      document.getElementById("create-email").value = "";
+      document.getElementById("create-password").value = "";
+      document.getElementById("create-role").value = "immigration";
+      document.getElementById("create-pincode").value = "";
+      document.getElementById("create-error").classList.add("hidden");
+      document.getElementById("create-success").classList.add("hidden");
+    };
+    document.getElementById("create-cancel-btn").onclick = () => {
+      document.getElementById("create-modal").classList.add("hidden");
+    };
+    document.getElementById("create-form").onsubmit = async (e) => {
+      e.preventDefault();
+      const errEl = document.getElementById("create-error");
+      const sucEl = document.getElementById("create-success");
+      errEl.classList.add("hidden");
+      sucEl.classList.add("hidden");
+      const pincode = document.getElementById("create-pincode").value;
+      if (pincode !== "1007") { errEl.textContent = "Invalid admin pincode"; errEl.classList.remove("hidden"); return; }
+      try {
+        const name = document.getElementById("create-name").value;
+        const email = document.getElementById("create-email").value;
+        const password = document.getElementById("create-password").value;
+        const role = document.getElementById("create-role").value;
+        const cred = await fbAuth.createUserWithEmailAndPassword(email, password);
+        await db.collection("users").doc(cred.user.uid).set({
+          email, displayName: name, role,
+          createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        });
+        await fbAuth.signOut();
+        sucEl.textContent = "Account created! You can now sign in.";
+        sucEl.classList.remove("hidden");
+      } catch (err) {
+        errEl.textContent = err.message || "Failed to create account";
         errEl.classList.remove("hidden");
       }
     };

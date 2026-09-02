@@ -1,37 +1,27 @@
-async function listUsers() {
-  const res = await Api.apiFetch("/api/users");
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Failed to load users");
-  return data.users.map((u) => ({ ...u, createdAt: new Date(u.createdAt) }));
-}
+const Users = {
+  async list() {
+    const snap = await db.collection("users").get();
+    return snap.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+  },
 
-async function createUserAccount(input) {
-  const res = await Api.apiFetch("/api/users", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(input),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Failed to create user");
-}
+  async create({ email, password, name, role }) {
+    const cred = await fbAuth.createUserWithEmailAndPassword(email, password);
+    await db.collection("users").doc(cred.user.uid).set({
+      email,
+      displayName: name,
+      role,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    });
+    return { id: cred.user.uid, email, displayName: name, role };
+  },
 
-async function updateUserRole(userId, role) {
-  const res = await Api.apiFetch(`/api/users/${userId}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ role }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Failed to update role");
-  return data.user;
-}
+  async updateRole(uid, role) {
+    await db.collection("users").doc(uid).update({ role });
+  },
 
-async function deleteUser(userId) {
-  const res = await Api.apiFetch(`/api/users/${userId}`, {
-    method: "DELETE",
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Failed to delete user");
-}
+  async remove(uid) {
+    await db.collection("users").doc(uid).delete();
+  },
+};
 
-window.Users = { listUsers, createUserAccount, updateUserRole, deleteUser };
+window.Users = Users;

@@ -1,77 +1,48 @@
 let currentUser = null;
-let currentProfile = null;
+let currentUserProfile = null;
 let authReady = false;
 const authListeners = [];
 
-function onAuthChange(callback) {
-  authListeners.push(callback);
-  if (authReady) {
-    callback({ user: currentUser, profile: currentProfile, ready: true });
-  }
+function onAuthChange(cb) {
+  authListeners.push(cb);
+  if (authReady) cb({ user: currentUser, profile: currentUserProfile, ready: true });
 }
 
-function notifyAuthChange() {
-  if (!authReady) return;
-  for (const cb of authListeners) {
-    cb({ user: currentUser, profile: currentProfile, ready: true });
-  }
+function notifyAuth() {
+  authListeners.forEach((cb) => cb({ user: currentUser, profile: currentUserProfile, ready: true }));
 }
 
-async function refresh() {
-  try {
-    const res = await Api.apiFetch("/api/auth/me");
-    if (res.ok) {
-      const data = await res.json();
-      currentUser = data.user;
-      currentProfile = data.user;
-    } else {
-      currentUser = null;
-      currentProfile = null;
-    }
-  } catch {
+fbAuth.onAuthStateChanged(async (fbUser) => {
+  if (fbUser) {
+    currentUser = fbUser;
+    const snap = await db.collection("users").doc(fbUser.uid).get();
+    currentUserProfile = snap.exists ? { id: snap.id, ...snap.data() } : null;
+  } else {
     currentUser = null;
-    currentProfile = null;
+    currentUserProfile = null;
   }
   authReady = true;
-  notifyAuthChange();
-}
-
-function initAuth() {
-  if (!authReady) refresh();
-}
+  notifyAuth();
+});
 
 async function login(email, password) {
-  const res = await Api.apiFetch("/api/auth/login", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
-  const data = await res.json();
-  if (!res.ok) throw new Error(data.error || "Sign in failed");
-  currentUser = data.user;
-  currentProfile = data.user;
-  authReady = true;
-  notifyAuthChange();
+  const cred = await fbAuth.signInWithEmailAndPassword(email, password);
+  const snap = await db.collection("users").doc(cred.user.uid).get();
+  if (!snap.exists) throw new Error("Account exists but has no profile. Contact admin.");
+  currentUserProfile = { id: snap.id, ...snap.data() };
 }
 
 async function logout() {
-  await Api.apiFetch("/api/auth/logout", { method: "POST" });
+  await fbAuth.signOut();
   currentUser = null;
-  currentProfile = null;
-  authReady = true;
-  notifyAuthChange();
+  currentUserProfile = null;
 }
 
-function getCurrentUser() {
-  return currentUser;
-}
-
-function getCurrentProfile() {
-  return currentProfile;
-}
+function getCurrentUser() { return currentUser; }
+function getCurrentProfile() { return currentUserProfile; }
 
 window.Auth = {
-  initAuth,
+  initAuth() {},
   onAuthChange,
   login,
   logout,
@@ -79,9 +50,9 @@ window.Auth = {
   getCurrentProfile,
   friendlyAuthError: (err) => {
     const msg = err?.message || "Sign in failed";
-    if (msg === "Failed to fetch" || msg === "Load failed" || msg === "NetworkError when attempting to fetch resource.") {
-      return "Cannot reach the server. Open http://localhost:8080 and make sure the project is running.";
-    }
+    if (msg.includes("user-not-found")) return "No account found with this email.";
+    if (msg.includes("wrong-password") || msg.includes("invalid-credential")) return "Invalid email or password.";
+    if (msg.includes("too-many-requests")) return "Too many attempts. Try again later.";
     return msg;
   },
 };

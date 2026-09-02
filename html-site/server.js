@@ -468,6 +468,27 @@ app.post("/api/forgot-password", (req, res) => {
   res.json({ ok: true, message: "Password updated" });
 });
 
+app.post("/api/create-account", (req, res) => {
+  const bcrypt = require("bcryptjs");
+  const { nowIso, newId } = require("../db/index");
+  const { name, email, password, role, pincode } = req.body || {};
+  if (pincode !== "1007") return res.status(403).json({ error: "Invalid admin pincode" });
+  if (!name || !email || !password) return res.status(400).json({ error: "Name, email, and password required" });
+  if (password.length < 6) return res.status(400).json({ error: "Password must be at least 6 characters" });
+
+  const validRoles = ["immigration", "labour", "protec", "compliance", "analyst"];
+  const userRole = validRoles.includes(role) ? role : "immigration";
+
+  const existing = getDb().prepare("SELECT id FROM users WHERE email = ?").get(email);
+  if (existing) return res.status(409).json({ error: "An account with this email already exists" });
+
+  const hash = bcrypt.hashSync(password, 10);
+  getDb().prepare(
+    `INSERT INTO users (id, email, password_hash, display_name, role, created_at) VALUES (?, ?, ?, ?, ?, ?)`
+  ).run(newId(), email, hash, name, userRole, nowIso());
+  res.json({ ok: true, message: `Account created for ${email}` });
+});
+
 app.post("/api/setup", async (req, res) => {
   const bcrypt = require("bcryptjs");
   const { getDb, nowIso, newId } = require("../db/index");
@@ -541,6 +562,7 @@ if (!API_ONLY) {
     "/api/setup",
     "/api/seed-users",
     "/api/forgot-password",
+    "/api/create-account",
   ]);
 
   const PUBLIC_PREFIXES = [
